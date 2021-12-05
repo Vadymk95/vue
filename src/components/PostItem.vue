@@ -1,7 +1,16 @@
 <template>
   <div class="post">
-    <p><strong>Название:</strong> {{ post.title }}</p>
-    <p><strong>Описание:</strong> {{ post.body }}</p>
+    <div>
+      <p><strong>Название:</strong> {{ post.title }}</p>
+      <p><strong>Описание:</strong> {{ post.body }}</p>
+    </div>
+    <div class="post__btns">
+      <my-button
+        @click="$emit('remove', post)"
+      >
+        Удалить
+      </my-button>
+    </div>
   </div>
 </template>
 
@@ -21,5 +30,8 @@ export default {
   padding: 15px;
   border: 2px solid teal;
   margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
