@@ -1,13 +1,19 @@
 <template>
   <div class="app">
     <h1>Страница с постами</h1>
-    <my-button style="margin: 15px 0" @click="showDialog"
-      >Создать пост</my-button
-    >
+    <div class="app__btns">
+      <my-button @click="showDialog">Создать пост</my-button>
+      <my-select v-model="selectedSort" :options="sortOptions" />
+    </div>
     <my-dialog v-model:show="dialogVisible">
       <post-form @create="createPost" />
     </my-dialog>
-    <post-list :posts="posts" @remove="removePost" />
+    <post-list
+      :posts="sortedPosts"
+      @remove="removePost"
+      v-if="!isPostsLoading"
+    />
+    <div v-else>Загрузка</div>
   </div>
 </template>
 
@@ -24,6 +30,12 @@ export default {
     return {
       posts: [],
       dialogVisible: false,
+      isPostsLoading: false,
+      selectedSort: '',
+      sortOptions: [
+        { value: 'title', name: 'По названию' },
+        { value: 'body', name: 'По содержимому' },
+      ],
     };
   },
   methods: {
@@ -39,13 +51,29 @@ export default {
     },
     async fetchPosts() {
       try {
-        const response = await axios(
-          'https://jsonplaceholder.typicode.com/posts?_limit=10'
-        );
-        this.posts = response.data;
+        this.isPostsLoading = true;
+        setTimeout(async () => {
+          const response = await axios(
+            'https://jsonplaceholder.typicode.com/posts?_limit=10'
+          );
+          this.posts = response.data;
+          this.isPostsLoading = false;
+        }, 1000);
       } catch (e) {
         alert('Ошибка');
       }
+    },
+  },
+  mounted() {
+    this.fetchPosts();
+  },
+  computed: {
+    sortedPosts() {
+      return [...this.posts].sort((post1, post2) => {
+        return post1[this.selectedSort]?.localeCompare(
+          post2[this.selectedSort]
+        );
+      });
     },
   },
 };
@@ -53,6 +81,7 @@ export default {
 
 <style>
 * {
+  font-family: sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -60,5 +89,11 @@ export default {
 
 .app {
   padding: 20px;
+}
+
+.app__btns {
+  margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
 }
 </style>
