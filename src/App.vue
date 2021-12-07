@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <h1>Страница с постами</h1>
+    <my-input v-model="searchQuery" placeholder="Поиск поста..." />
     <div class="app__btns">
       <my-button @click="showDialog">Создать пост</my-button>
       <my-select v-model="selectedSort" :options="sortOptions" />
@@ -9,15 +10,21 @@
       <post-form @create="createPost" />
     </my-dialog>
     <post-list
-      :posts="sortedPosts"
+      :posts="sortedAndSearchedPosts"
       @remove="removePost"
       v-if="!isPostsLoading"
     />
     <div v-else>Загрузка</div>
+    <post-pagination
+      :page="page"
+      @changePage="changePage"
+      :totalPages="totalPages"
+    />
   </div>
 </template>
 
 <script>
+import PostPagination from '@/components/PostPagination';
 import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import axios from 'axios';
@@ -25,13 +32,18 @@ export default {
   components: {
     PostForm,
     PostList,
+    PostPagination,
   },
   data() {
     return {
       posts: [],
       dialogVisible: false,
       isPostsLoading: false,
+      searchQuery: '',
+      totalPages: 0,
       selectedSort: '',
+      page: 1,
+      limit: 10,
       sortOptions: [
         { value: 'title', name: 'По названию' },
         { value: 'body', name: 'По содержимому' },
@@ -53,15 +65,27 @@ export default {
       try {
         this.isPostsLoading = true;
         setTimeout(async () => {
-          const response = await axios(
-            'https://jsonplaceholder.typicode.com/posts?_limit=10'
+          const response = await axios.get(
+            'https://jsonplaceholder.typicode.com/posts',
+            {
+              params: {
+                _page: this.page,
+                _limit: this.limit,
+              },
+            }
+          );
+          this.totalPages = Math.ceil(
+            response.headers['x-total-count'] / this.limit
           );
           this.posts = response.data;
           this.isPostsLoading = false;
-        }, 1000);
+        }, 300);
       } catch (e) {
         alert('Ошибка');
       }
+    },
+    changePage(pageNumber) {
+      this.page = pageNumber;
     },
   },
   mounted() {
@@ -74,6 +98,16 @@ export default {
           post2[this.selectedSort]
         );
       });
+    },
+    sortedAndSearchedPosts() {
+      return this.sortedPosts.filter((post) =>
+        post.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+  },
+  watch: {
+    page() {
+      this.fetchPosts();
     },
   },
 };
