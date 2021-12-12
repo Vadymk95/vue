@@ -3,9 +3,9 @@
     <h1 @click="$router.push('/')">Vue 3</h1>
     <div class="navbar__btns">
       <my-button @click="$router.push('/posts')">Посты</my-button>
-      <my-button @click="$router.push('/about')" style="margin-left: 20px"
-        >О сайте</my-button
-      >
+      <my-button @click="$router.push('/store')" style="margin-left: 20px">Хранилище</my-button>
+      <my-button @click="$router.push('/composition')" style="margin-left: 20px">Композиция</my-button>
+      <my-button @click="$router.push('/about')" style="margin-left: 20px">О сайте</my-button>
     </div>
   </div>
 </template>
